@@ -1,8 +1,7 @@
 const express = require('express')
 const route = express()
+const { getAll } = require('./controller')
 
-route.get('/todos', (req, res) => {
-    res.json({ message: 'heello toodos'});
-})
+route.get('/todos', getAll)
 
 module.exports = route
