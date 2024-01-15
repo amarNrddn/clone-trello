@@ -10,7 +10,13 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       name: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: "Nama wajib di isi"
+          },
+        }
       },
       createdAt: {
         allowNull: false,

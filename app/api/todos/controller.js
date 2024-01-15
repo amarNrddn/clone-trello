@@ -1,5 +1,4 @@
 const { Todo, Item } = require('../../db/models')
-const { response } = require('./router')
 
 const getAll = async (req, res, next) => {
     try {
@@ -15,7 +14,7 @@ const getAll = async (req, res, next) => {
             data: result
         })
     } catch (error) {
-        error
+        next(error)
     }
 }
 
@@ -64,17 +63,41 @@ const update = async (req, res, next) => {
             })
         }
 
-        const result = await Todo.update(
+        await Todo.update(
             { name },
-            { where: { id: id } }
+            {
+                where: { id: id },
+                attributes: ['id', 'name', 'createdAt', 'updatedAt']
+            }
         )
-
+ 
         res.status(201).json({
             message: 'Succes',
-            data: result
+            data: chechk
         })
     } catch (error) {
         next((error))
+    }
+}
+
+const destroy = async (req, res, next) => {
+    try {
+        const { id } = req.params
+
+        const chechk = await Todo.findOne({
+            where: { id: id }
+        })
+
+        await Todo.destroy({
+            where: { id: id }
+        })
+
+        res.status(200).json({
+            message: 'Succes',
+            data: chechk
+        })
+    } catch (error) {
+        next(error)
     }
 }
 
@@ -82,5 +105,6 @@ module.exports = {
     getAll,
     create,
     showOne,
-    update
+    update,
+    destroy
 }
