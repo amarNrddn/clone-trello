@@ -1,27 +1,9 @@
 const { Todo, Item } = require('../../db/models')
 
-const getAll = async (req, res, next) => {
-    try {
-        const result = await Todo.findAll({
-            attributes: ['id', 'name'],
-            include: {
-                model: Item,
-                attributes: ['id', 'name', 'TodoId'],
-            }
-        })
-        res.status(200).json({
-            message: 'Succes',
-            data: result
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
 const showOne = async (req, res, next) => {
     try {
         const { id } = req.params
-        const result = await Todo.findOne({
+        const result = await Item.findOne({
             where: { id: id }
         })
 
@@ -36,8 +18,8 @@ const showOne = async (req, res, next) => {
 
 const create = async (req, res, next) => {
     try {
-        const { name } = req.body
-        const result = await Todo.create({ name })
+        const { name, TodoId } = req.body
+        const result = await Item.create({ name, TodoId })
 
         res.status(201).json({
             message: 'Succes',
@@ -53,7 +35,7 @@ const update = async (req, res, next) => {
         const { id } = req.params
         const { name } = req.body
 
-        const chechk = await Todo.findOne({
+        const chechk = await Item.findOne({
             where: { id: id }
         })
 
@@ -63,7 +45,7 @@ const update = async (req, res, next) => {
             })
         }
 
-        await Todo.update(
+        await Item.update(
             { name },
             {
                 where: { id: id },
@@ -71,7 +53,7 @@ const update = async (req, res, next) => {
             }
         )
 
-        const result = await Todo.findOne({ where: { id: id } })
+        const result = await Item.findOne({ where: { id: id } })
 
         res.status(201).json({
             message: 'Succes',
@@ -86,13 +68,16 @@ const destroy = async (req, res, next) => {
     try {
         const { id } = req.params
 
-        const chechk = await Todo.findOne({
+        const chechk = await Item.findOne({
             where: { id: id }
         })
 
-        await Todo.destroy({
-            where: { id: id }
-        })
+        if (!chechk) {
+            res.status(400).json({
+                message: `Tidak ada id ${id}`
+            })
+        }
+
 
         res.status(200).json({
             message: 'Succes',
@@ -103,10 +88,30 @@ const destroy = async (req, res, next) => {
     }
 }
 
+const move = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const { targetTodoId } = req.body
+
+        const result = await Item.findOne({ where: { id: id } })
+
+        result.TodoId = targetTodoId
+
+        await result.save()
+
+        res.status(200).json({
+            message: 'Succes',
+            data: result
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
 module.exports = {
-    getAll,
     create,
     showOne,
     update,
-    destroy
+    destroy,
+    move
 }
